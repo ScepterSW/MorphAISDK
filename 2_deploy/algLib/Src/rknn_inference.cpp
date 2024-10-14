@@ -7,6 +7,7 @@
 #include "image_process.h"
 #include "post_process_custom.h"
 #include "post_process_yolov5.h"
+#include "post_process_yolov8.h"
 #include "post_process_vzense_box.h"
 
 const int  N_CLASS_COLORS = 20;
@@ -39,6 +40,8 @@ unsigned char class_colors[N_CLASS_COLORS][3] = {
 RKNNInference::RKNNInference():
 #ifdef YOLOV5
     m_postprocess_p(new PostProcessYolov5),
+#elif defined YOLOV8
+    m_postprocess_p(new PostProcessYolov8),
 #elif defined VZENSE_BOX
     m_postprocess_p(new PostProcessVzenseBox),
 #else
@@ -170,7 +173,9 @@ int RKNNInference::Detect(const CameraSingleFrame &img, detect_result_group_t& d
                 det_result.box.left, det_result.box.top, det_result.box.right, det_result.box.bottom,
                 det_result.prop);
         }
-        cv::imwrite("result.png", imgShow);
+        cv::Mat imgRGB;
+        cv::cvtColor(imgShow, imgRGB, cv::COLOR_BGR2RGB);
+        cv::imwrite("result.png", imgRGB);
     }
     else
     {

@@ -4,7 +4,7 @@ set -e
 
 . ./build.conf
 
-SUPPORT_MODEL_TYPES=("yolov5" "vzense_box")
+SUPPORT_MODEL_TYPES=("yolov5" "yolov8" "vzense_box")
 
 support_model=0
 for type in "${SUPPORT_MODEL_TYPES[@]}"; do
@@ -30,7 +30,7 @@ fi
 
 if [ -z ${MODEL_TYPE} ]; then
   echo "Please set MODEL_TYPE"
-  echo "such as MODEL_TYPE=yolov5/vzense_box"
+  echo "such as MODEL_TYPE=yolov5/yolov8/vzense_box"
   exit -1
 fi
 

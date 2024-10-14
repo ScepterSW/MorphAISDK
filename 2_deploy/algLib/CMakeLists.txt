@@ -41,6 +41,8 @@ message(STATUS "+++++++++++++++++++++")
 
 if (MODEL_TYPE STREQUAL "yolov5")
     add_definitions(-DYOLOV5)
+elseif(MODEL_TYPE STREQUAL "yolov8")
+    add_definitions(-DYOLOV8)
 elseif(MODEL_TYPE STREQUAL "vzense_box")
     add_definitions(-DVZENSE_BOX)
 endif()

@@ -3,14 +3,16 @@ import os
 from ruamel import yaml
 from rknn.api import RKNN
 
+curdir_ = os.path.dirname(os.path.abspath(__file__)) + '/'
+
 # the path of ONNX model file
-MODEL_FILE_PATH = './model/vzense_box.onnx'
+MODEL_FILE_PATH = curdir_ + './model/vzense_box.onnx'
 
 # a input data set for rectifying quantization parameters.
-DATASET_CONFIG_PATH = '../../datasets/vzense_box/vzense_box.txt'
+DATASET_CONFIG_PATH = curdir_ + '../../datasets/vzense_box/vzense_box.txt'
 
 # the path of generated RKNN model file
-OUT_PATH = './out'
+OUT_PATH = curdir_ + './out'
 
 # the ip of the connected device
 DEVICE_IP = '192.168.1.101'

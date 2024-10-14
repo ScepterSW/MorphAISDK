@@ -9,6 +9,6 @@
         },
         "colorFileRelativePath":"./testdata/Color.jpg",
         "depthFileRelativePath":"./testdata/DepthImgToColorSensor.png",
-        "rootDirectoryOfAlg":"/userdata/algorithm_data"
+        "rootDirectoryOfAlg":"/userdata/algorithm_data/algTest"
     }
 }

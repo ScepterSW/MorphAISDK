@@ -3,14 +3,16 @@ import os
 from ruamel import yaml
 from rknn.api import RKNN
 
+curdir_ = os.path.dirname(os.path.abspath(__file__)) + '/'
+
 # the path of ONNX model file
-MODEL_FILE_PATH = './model/yolov5s_relu.onnx'
+MODEL_FILE_PATH = curdir_ + './model/yolov5s_relu.onnx'
 
 # a input data set for rectifying quantization parameters.
-DATASET_CONFIG_PATH = '../../datasets/yolov5/yolov5.txt'
+DATASET_CONFIG_PATH = curdir_ + '../../datasets/yolo/yolo.txt'
 
 # the path of generated RKNN model file
-OUT_PATH = './out'
+OUT_PATH = curdir_ + './out'
 
 # the ip of the connected device
 DEVICE_IP = '192.168.1.101'
@@ -77,7 +79,7 @@ if __name__ == '__main__':
     if (config.precompile):
         output_path = os.path.join(config.out_path, os.path.basename(
             config.model_file_path).split('.')[0]+'_precompile.rknn')
-        print('--> Export pre-complie model:', output_path)
+        print('--> Exporting pre-complie model:', output_path)
         rknn.init_runtime(target=config.target_platform,
                           device_id=config.device_id, rknn2precompile=config.precompile)
         rknn.export_rknn_precompile_model(output_path)
@@ -86,7 +88,7 @@ if __name__ == '__main__':
         # Export rknn model
         output_path = os.path.join(config.out_path, os.path.basename(
             config.model_file_path).split('.')[0]+'.rknn')
-        print('--> Export rknn model:', output_path)
+        print('--> Exporting rknn model:', output_path)
         ret = rknn.export_rknn(output_path)
         if ret != 0:
             print('Export rknn model failed!')

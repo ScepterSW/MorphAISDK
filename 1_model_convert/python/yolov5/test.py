@@ -3,8 +3,8 @@ import cv2
 import sys
 
 # add path
-realpath = os.path.abspath(__file__)
-sys.path.append(os.path.join(os.path.dirname(realpath), '..'))
+curdir_ = os.path.dirname(os.path.abspath(__file__)) + '/'
+sys.path.append(os.path.join(curdir_, '..'))
 
 from py_utils.coco_utils import COCO_test_helper
 from py_utils.rknn_executor import RKNN_model_container
@@ -12,13 +12,13 @@ from py_utils.yolov5_postprocess import *
 import numpy as np
 
 # the path of rknn model file
-MODEL_FILE_PATH = './out/yolov5s_relu_precompile.rknn'
+MODEL_FILE_PATH = curdir_ + './out/yolov5s_relu_precompile.rknn'
 
 # the path of the test image
-TEST_IMAGE_PATH = './model/bus.jpg'
+TEST_IMAGE_PATH = curdir_ + './model/bus.jpg'
 
 # the path of saved the detection result
-OUT_PATH = './out'
+OUT_PATH = curdir_ + './out'
 
 # the ip of the connected device
 DEVICE_IP = '192.168.1.101'

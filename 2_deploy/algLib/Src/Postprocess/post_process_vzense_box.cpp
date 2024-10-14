@@ -1,5 +1,6 @@
 #include <set>
 #include "post_process_vzense_box.h"
+#include "log.h"
 
 const static int anchor[][6] = {{10, 13, 16, 30, 33, 23},
                                 {30, 61, 62, 45, 59, 119},
@@ -69,13 +70,13 @@ int PostProcessVzenseBox::Process(MODEL_INFO *model_info, float conf_threshold, 
     /* box valid detect target */
     for (int i = 0; i < validCount; ++i)
     {
-        int n = indexArray[i];
         if (indexArray[i] == -1 
         || last_count >= OBJ_NUMB_MAX_SIZE)
         {
             continue;
         }
-
+        
+        int n = indexArray[i];
         float x1 = filterBoxes[n * 4 + 0];
         float y1 = filterBoxes[n * 4 + 1];
         float x2 = x1 + filterBoxes[n * 4 + 2];
@@ -89,8 +90,8 @@ int PostProcessVzenseBox::Process(MODEL_INFO *model_info, float conf_threshold, 
         od_results->results[last_count].prop = obj_conf;
         strncpy(od_results->results[last_count].name, "vzense box", OBJ_NAME_MAX_SIZE);
 
-        // Log("result %2d: %.6f (%4d, %4d, %4d, %4d), %s.", i, od_results->results[last_count].prop, od_results->results[last_count].box.left, od_results->results[last_count].box.top,
-        //         od_results->results[last_count].box.right, od_results->results[last_count].box.bottom, label);
+        // Log("result %2d: %.6f (%4d, %4d, %4d, %4d).", i, od_results->results[last_count].prop, od_results->results[last_count].box.left, od_results->results[last_count].box.top,
+        //         od_results->results[last_count].box.right, od_results->results[last_count].box.bottom);
         last_count++;
     }
     od_results->count = last_count;

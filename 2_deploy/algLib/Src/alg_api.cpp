@@ -4,7 +4,7 @@
 #include "log.h"
 #include "serialization.h"
 
-static const string VERSION = "24.9.8";
+static const string VERSION = "24.09.8";
 static unique_ptr<ALG_Impl> gALG_ImplPtr = nullptr;
 
 #define CHECKINIT if(nullptr == gALG_ImplPtr)                                                                               \
