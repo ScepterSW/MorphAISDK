@@ -54,7 +54,7 @@ if __name__ == '__main__':
     # Pre-process config
     print('--> Config model')
     rknn.config(mean_values=config.mean_values, std_values=config.std_values,
-                target_platform=config.target_platform)
+                target_platform=config.target_platform, output_optimize = 1)
     print('done')
 
     # Load model

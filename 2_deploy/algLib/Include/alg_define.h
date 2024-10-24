@@ -81,7 +81,7 @@ typedef enum AlgorithmStateEnum
 //Specifies the ID of the parameter
 typedef enum ParamID
 {
-    PARAM_SERIALNUMBER = 0,                 //Device serial number
+    PARAM_VERSION = 0,                      //Algorithm Version Number
     PARAM_CONF_THRESH = 1,                  //The threshold of the prediction box
     PARAM_IOU_THRESH = 2,                   //The threshold for IOU detection
     PARAM_SAVE_RESULT_IMAGE_ENABLE = 3,     //Save an image of the model predictions

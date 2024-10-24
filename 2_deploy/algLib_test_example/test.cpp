@@ -60,7 +60,8 @@ int main(int argc, char **argv)
     
     free(frame[0].p_data);
     free(frame[1].p_data);
-    alg.Ctrl_stop();
+    alg.Ctrl_stop();    
+    alg.Release();
 
     return 0;
 }

@@ -36,7 +36,7 @@ class Config:
 
         self.model_file_path = MODEL_FILE_PATH
         self.test_img_path = TEST_IMAGE_PATH
-        self.model_input_img_size = (640, 640)
+        self.model_input_img_size = (320, 320)
         self.anchors = ANCHORS
         self.obj_thresh = 0.25
         self.nms_thresh = 0.45

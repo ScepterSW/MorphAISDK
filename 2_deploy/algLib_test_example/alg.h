@@ -9,6 +9,7 @@ class Alg
 {
 public:
     int Initialize(const string& configStr);
+    int Release();
     int Ctrl_start(void);
     int Ctrl_stop(void);
     int Push_frame(CameraJointFrame& jointFrame);

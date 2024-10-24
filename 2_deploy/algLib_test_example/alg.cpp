@@ -18,7 +18,12 @@ int Alg::Initialize(const string& configStr)
  
     return algo_initialize(&initParam);
 }
- 
+
+int Alg::Release()
+{
+    return algo_release();
+}
+
 int Alg::Ctrl_start(void)
 {
     return algo_ctrl_start();

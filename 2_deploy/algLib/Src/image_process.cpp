@@ -7,21 +7,31 @@
 static const int COLOR = 114;
 static const int IMG_W = 640;
 static const int IMG_H = 480;
+static const int IMG_W_HALF = IMG_W / 2;
+static const int IMG_H_HALF = IMG_H / 2;
 
 ImgProcess::ImgProcess():
     m_mutex(),
     m_cv(),
     m_frame_input{},
+    m_currentIndex(0),
     m_LensParameters_input{},
     m_frame_Inference{0, 0, FRAME_RGB, PIXEL_FORMAT_RGB_888, IMG_W, IMG_W, IMG_W * IMG_W * GetElemSize(PIXEL_FORMAT_RGB_888)},
     m_frame_Depth{0, 0, FRAME_DEPTH, PIXEL_FORMAT_DEPTH_MM16, IMG_W, IMG_H, IMG_W* IMG_H * GetElemSize(PIXEL_FORMAT_DEPTH_MM16)},
     m_PointCloud_Calculate_Tab(),
-    m_LensParameters{}
+    m_LensParameters{},
+    m_input_img_size(IMG_W_HALF, IMG_H_HALF),
+    m_model_img_size(IMG_W_HALF, IMG_W_HALF),
+    m_model_img_border_h(40),
+    m_img_resize_factor(1.f)
 {
-    m_frame_input[0].p_data = new uint8_t[IMG_W * IMG_W * 3];
-    m_frame_input[1].p_data = new uint8_t[IMG_W * IMG_W * 3];
+    m_frame_input[0][0].p_data = new uint8_t[IMG_W * IMG_W * 3];
+    m_frame_input[0][1].p_data = new uint8_t[IMG_W * IMG_W * 2];
+    m_frame_input[1][0].p_data = new uint8_t[IMG_W * IMG_W * 3];
+    m_frame_input[1][1].p_data = new uint8_t[IMG_W * IMG_W * 2];
 
     m_frame_Inference.p_data = new uint8_t[m_frame_Inference.data_len];
+    memset(m_frame_Inference.p_data, 114, m_frame_Inference.data_len);
     m_frame_Depth.p_data = new uint8_t[m_frame_Depth.data_len];
 }
 
@@ -29,8 +39,41 @@ ImgProcess::~ImgProcess()
 {
     delete[] m_frame_Depth.p_data;
     delete[] m_frame_Inference.p_data;
-    delete[] m_frame_input[0].p_data;
-    delete[] m_frame_input[1].p_data;
+    delete[] m_frame_input[0][0].p_data;
+    delete[] m_frame_input[0][1].p_data;
+    delete[] m_frame_input[1][0].p_data;
+    delete[] m_frame_input[1][1].p_data;
+}
+
+int ImgProcess::SetModelInputImageSize(int img_w, int img_h)
+{
+    if(img_w > m_frame_Inference.width || img_h > m_frame_Inference.height)
+    {
+        Log("The size of the input image for the model is too large, exceeding the size of the pre-requested buffer: model size(%d, %d), buffer size((%d, %d)",
+        img_w, img_h, m_frame_Inference.width, m_frame_Inference.height);
+
+        return ALGO_RET_INIT_MODEL_NG;
+    }
+
+    m_model_img_size.width = img_w;
+    m_model_img_size.height = img_h;
+
+    return ALGO_RET_OK;
+}
+
+void ImgProcess::GetRealBox(BOX_RECT box, BOX_RECT& realBox)
+{
+    realBox.left = int(box.left / m_img_resize_factor + 0.5f); 
+    realBox.right = int(box.right / m_img_resize_factor + 0.5f); 
+    realBox.top = int((box.top - m_model_img_border_h) / m_img_resize_factor + 0.5f);
+    realBox.bottom = int((box.bottom - m_model_img_border_h) / m_img_resize_factor + 0.5f);
+
+    realBox.left = realBox.left > 0 ? (realBox.left < m_input_img_size.width ? realBox.left  : (m_input_img_size.width -1)) : 0;
+    realBox.right = realBox.right > 0 ? (realBox.right < m_input_img_size.width ? realBox.right  : (m_input_img_size.width -1)) : 0;
+    realBox.top = realBox.top > 0 ? (realBox.top < m_input_img_size.height ? realBox.top  : (m_input_img_size.height -1)) : 0;
+    realBox.bottom = realBox.bottom > 0 ? (realBox.bottom < m_input_img_size.height ? realBox.bottom  : (m_input_img_size.height -1)) : 0;
+
+    return;
 }
 
 int ImgProcess::GetElemSize(PIXEL_FORMAT_E e)
@@ -87,6 +130,17 @@ bool ImgProcess::CheckFrame(const CAM_SINGLE_FRAME_T& frame)
 
 int ImgProcess::UpdateData(const CAM_JOINT_FRAME_T *p_joint_frame)
 {
+    static int fps = 0;
+    static int64_t start = LogCustom::GetTimeStampMS();
+    int64_t current = LogCustom::GetTimeStampMS();
+    fps++;
+    if (current - start > 1000)
+    {
+        Log("UpdateData fps:%.2f", fps * 1000.f / (current - start));
+        fps = 0;
+        start = current;
+    }
+
     CAM_SINGLE_FRAME_T* p_rgb_frame = nullptr;
     CAM_SINGLE_FRAME_T* p_ir_frame = nullptr;
     CAM_SINGLE_FRAME_T* p_depth_frame = nullptr;
@@ -154,19 +208,12 @@ int ImgProcess::UpdateData(const CAM_JOINT_FRAME_T *p_joint_frame)
         }
     }
 
-    lock_guard<mutex> lk(m_mutex);
-    int index = 0;
-    if (nullptr != p_rgb_frame)
+    if (nullptr != p_rgb_frame && nullptr != p_depth_frame)
     {
-        CopyFrame(*p_rgb_frame, m_frame_input[index++]);
-    }
-    if(nullptr != p_ir_frame)
-    {
-        CopyFrame(*p_ir_frame, m_frame_input[index++]);
-    }
-    if(nullptr != p_depth_frame)
-    {
-        CopyFrame(*p_depth_frame, m_frame_input[index++]);
+        lock_guard<mutex> lk(m_mutex);
+        CopyFrame(*p_rgb_frame, m_frame_input[m_currentIndex][0]);
+        CopyFrame(*p_depth_frame, m_frame_input[m_currentIndex][1]);
+        m_currentIndex = 1 - m_currentIndex;
     }
     memcpy(&m_LensParameters_input, &(p_joint_frame->lens_parameters), sizeof(m_LensParameters_input));
     m_cv.notify_one();
@@ -178,17 +225,33 @@ int ImgProcess::ProcessData()
     int result = ALGO_RET_GET_FRAME_TIMEOUT;
     unique_lock<mutex> lk(m_mutex);
     if (false == m_cv.wait_for(lk, std::chrono::milliseconds(1000), [this] {
-        return 0 != m_frame_input[0].frame_no; }))
+        return 0 != m_frame_input[1-m_currentIndex][0].frame_no; }))
     {
         return result;
-    }    
+    }
 
-    m_frame_Inference.frame_no = m_frame_input[0].frame_no;
-    m_frame_Inference.timestamp = m_frame_input[0].timestamp;
-    memcpy(m_frame_Inference.p_data + LABEL_BORDER * m_frame_Inference.width * GetElemSize(m_frame_Inference.pixel_format), m_frame_input[0].p_data, m_frame_input[0].data_len);
-    SwapFrame(m_frame_input[1], m_frame_Depth);
+    int64_t t0 = LogCustom::GetTimeStampMS();
+    CAM_SINGLE_FRAME_T& color = m_frame_input[1-m_currentIndex][0];
+    m_frame_Inference.frame_no = color.frame_no;
+    m_frame_Inference.timestamp = color.timestamp;
+    m_frame_Inference.width = m_model_img_size.width;
+    m_frame_Inference.height = m_model_img_size.height;
+    m_frame_Inference.data_len = m_frame_Inference.width * m_frame_Inference.height * GetElemSize(m_frame_Inference.pixel_format);
 
-    m_frame_input[0].frame_no = 0;
+    m_img_resize_factor = m_model_img_size.width * 1.f / color.width;
+    m_model_img_border_h = int(m_model_img_size.height - color.height * m_img_resize_factor) / 2;
+
+    cv::Mat src = cv::Mat(color.height, color.width, CV_8UC3, color.p_data);
+    m_input_img_size = src.size();
+    uint8_t *pDest = m_frame_Inference.p_data + m_model_img_border_h * m_model_img_size.width * GetElemSize(m_frame_Inference.pixel_format);
+    cv::Mat dest = cv::Mat(std::round(m_input_img_size.height * m_img_resize_factor), std::round(m_input_img_size.width * m_img_resize_factor), CV_8UC3, pDest);
+    cv::resize(src, dest, dest.size(), .0, .0, cv::INTER_NEAREST);
+
+    SwapFrame(m_frame_input[1-m_currentIndex][1], m_frame_Depth);
+
+    m_frame_input[1-m_currentIndex][0].frame_no = 0;
+    int64_t t1 = LogCustom::GetTimeStampMS();
+    Log("cost:%lld", (t1 - t0));
 
     return 0;
 }

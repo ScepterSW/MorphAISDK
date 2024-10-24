@@ -3,3 +3,5 @@ build
 install
 out
 *.rknn
+.vscode
+*.log

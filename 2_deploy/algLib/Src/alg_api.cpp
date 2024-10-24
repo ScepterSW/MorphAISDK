@@ -4,7 +4,7 @@
 #include "log.h"
 #include "serialization.h"
 
-static const string VERSION = "24.09.8";
+static const string VERSION = "24.10.1";
 static unique_ptr<ALG_Impl> gALG_ImplPtr = nullptr;
 
 #define CHECKINIT if(nullptr == gALG_ImplPtr)                                                                               \
@@ -105,26 +105,9 @@ ALGO_RET_E algo_set_param(uint32_t param_id, const char *p_in_param, uint16_t pa
 
     switch (ParamID(param_id))
     {
-    case PARAM_SERIALNUMBER:
+    case PARAM_VERSION:
     {
-        string json(p_in_param, param_len);
-        if(strlen(json.c_str()) != json.length() && (strlen(json.c_str()) + 1) != json.length())
-        {
-            Log("the length of p_in_param(%s) is not equal to param_len(%d != %d).", json.c_str(), strlen(json.c_str()), param_len);
-            ret = ALGO_RET_CHECK_PARAMS_NG;
-            return ret;
-        }
-        Serialization serialization;
-        string SN;
-        if (0 == serialization.GetSerialNumber(json, SN))
-        {
-            ret = (ALGO_RET_E)gALG_ImplPtr->SetSN(SN);
-        }
-        else
-        {
-            Log("p_in_param:%s, an error occurred while parsing json content.",json.c_str());
-            ret = ALGO_RET_JSON_PARSE_NG;
-        }
+        ret = ALGO_RET_NOT_SUPPORT;
     }
     break;
     case PARAM_CONF_THRESH:
@@ -219,20 +202,10 @@ ALGO_RET_E algo_get_param(uint32_t param_id, const char **p_out_param, uint16_t 
 
     switch (ParamID(param_id))
     {
-    case PARAM_SERIALNUMBER:
+    case PARAM_VERSION:
     {
-        Serialization serialization;
-        string sn = gALG_ImplPtr->GetSN();
-        int result = serialization.GetSerialNumberJson(Serialization::jsonStr, sn);
-        if (0 == result)
-        {
-            *p_out_param = Serialization::jsonStr.c_str();
-            *p_param_len = Serialization::jsonStr.length() + 1;
-        }
-        else
-        {
-            ret = ALGO_RET_JSON_GENERATE_NG;
-        }
+        *p_out_param = VERSION.c_str();
+        *p_param_len = VERSION.length() + 1;
     }
     break;
     case PARAM_CONF_THRESH:
@@ -285,6 +258,20 @@ ALGO_RET_E algo_get_param(uint32_t param_id, const char **p_out_param, uint16_t 
     {
         Log("param_id:%s, failed to generate json format string.", param_id);
     }
+
+    return ret;
+}
+
+ALGO_RET_E algo_release(void)
+{
+    Log("");
+    ALGO_RET_E ret = ALGO_RET_OK;
+
+    CHECKINIT;
+
+    gALG_ImplPtr.reset();
+
+    LogCustom::Release();
 
     return ret;
 }

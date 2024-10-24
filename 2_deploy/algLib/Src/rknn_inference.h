@@ -9,11 +9,12 @@
 
 using std::vector;
 struct CameraSingleFrame;
+class ImgProcess;
 
 class RKNNInference 
 {
 public:
-	RKNNInference();
+	RKNNInference(ImgProcess& imgprocess);
 	~RKNNInference();
 	int Init(const char* pWeightFilePath);
 	int SetConf_Thresh(float threshold);
@@ -22,8 +23,10 @@ public:
 	float GetConf_Thresh(){ return m_conf_thres;}
 	float GetIOU_Thresh(){ return m_iou_thres;}
     int Detect(const CameraSingleFrame &img, detect_result_group_t& detect_result_group);
+	const MODEL_INFO& GetModelInfo(){ return m_model_info; };
 
 private:
+	ImgProcess& m_imgProcess_ref;
 	PostProcess *m_postprocess_p;
 	MODEL_INFO m_model_info;
     float m_conf_thres;

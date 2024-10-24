@@ -16,7 +16,7 @@ using namespace std;
 ALG_Impl::ALG_Impl() :
     StoppableThread("ALG"),
     m_imgprocess(),
-    m_inference(),
+    m_inference(m_imgprocess),
     m_p_callback_func(nullptr),
     m_result_buf(new uint8_t[TOF_IMG_W * TOF_IMG_H]{0}),
     m_Info(),
@@ -54,6 +54,9 @@ int ALG_Impl::Init(const ALGO_INIT_PARAM_T *p_init_param)
         Log("Read config dir :%s pCallFunc:%p.", alg_root_str.c_str(), p_init_param->process_cb_func);
         ret = ALGO_RET_INIT_MODEL_NG;
     }
+    const MODEL_INFO modelInfo = m_inference.GetModelInfo();
+    ret = m_imgprocess.SetModelInputImageSize(modelInfo.img_w, modelInfo.img_h);
+
     return ret;
 }
 
@@ -229,8 +232,10 @@ void ALG_Impl::Run()
     int result = m_imgprocess.ProcessData();
     if (ALGO_RET_OK == result)
     {
+        int64_t t0 = LogCustom::GetTimeStampMS();
         CameraSingleFrame frame;
         m_imgprocess.GetInferenceImg(frame);
+        int64_t t1 = LogCustom::GetTimeStampMS();
 
         detect_result_group_t detect_result_group = {0};
         result = m_inference.Detect(frame, detect_result_group);
@@ -238,23 +243,31 @@ void ALG_Impl::Run()
         {
             SetInfo(Log("Detect:%d is failed.", result));
         }
-
+        int64_t t2 = LogCustom::GetTimeStampMS();
         m_imgprocess.GetDepthImg(frame);
         cv::Mat depth = cv::Mat(frame.height, frame.width, CV_16UC1, frame.p_data);
 
-        // cv::Mat imgShow;
-        // depth.convertTo(imgShow, CV_8U, 255.0 / 3600);
-        // applyColorMap(imgShow, imgShow, cv::COLORMAP_RAINBOW);
         for (int i = 0; i < detect_result_group.count; i++)
         {
             detect_result_t& det_result = detect_result_group.results[i];
             cv::Rect detectBox = cv::Rect(det_result.box.left, det_result.box.top, (det_result.box.right - det_result.box.left), (det_result.box.bottom - det_result.box.top));
             m_imgprocess.UpdatePointCloud(depth, detectBox, det_result.centerPosInWorld);
-            // cv::rectangle(imgShow, roi, cv::Scalar(255,255,255));
         }
-        // cv::imwrite("result_2.png", imgShow);
-
+        int64_t t3 = LogCustom::GetTimeStampMS();
         CallBackFunc(frame.timestamp, detect_result_group);
+        int64_t t4 = LogCustom::GetTimeStampMS();
+        Log("cost:%lld %lld %lld %lld %lld", (t4 - t0), (t1 - t0), (t2 - t1), (t3 - t2), (t4 - t3));
+
+        static int fps = 0;
+        static int64_t start = LogCustom::GetTimeStampMS();
+        int64_t current = LogCustom::GetTimeStampMS();
+        fps++;
+        if(current - start > 1000)
+        {
+            Log("Run fps:%.2f", fps * 1000.f / (current - start));
+            fps = 0;
+            start = current;
+        }
     }
     else
     {

@@ -54,7 +54,7 @@ if __name__ == '__main__':
     # Pre-process config
     print('--> Config model')
     rknn.config(mean_values=config.mean_values, std_values=config.std_values,
-                target_platform=config.target_platform)
+                target_platform=config.target_platform, output_optimize = 1)
     print('done')
 
     # Load model
@@ -79,7 +79,7 @@ if __name__ == '__main__':
     if (config.precompile):
         output_path = os.path.join(config.out_path, os.path.basename(
             config.model_file_path).split('.')[0]+'_precompile.rknn')
-        print('--> Export pre-complie model:', output_path)
+        print('--> Exporting pre-complie model:', output_path)
         rknn.init_runtime(target=config.target_platform,
                           device_id=config.device_id, rknn2precompile=config.precompile)
         rknn.export_rknn_precompile_model(output_path)
@@ -88,7 +88,7 @@ if __name__ == '__main__':
         # Export rknn model
         output_path = os.path.join(config.out_path, os.path.basename(
             config.model_file_path).split('.')[0]+'.rknn')
-        print('--> Export rknn model:', output_path)
+        print('--> Exporting rknn model:', output_path)
         ret = rknn.export_rknn(output_path)
         if ret != 0:
             print('Export rknn model failed!')

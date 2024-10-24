@@ -37,7 +37,8 @@ unsigned char class_colors[N_CLASS_COLORS][3] = {
 #define NMS_THRESH 0.45f
 #define BOX_THRESH 0.25f
 
-RKNNInference::RKNNInference():
+RKNNInference::RKNNInference(ImgProcess& imgprocess):
+    m_imgProcess_ref(imgprocess),
 #ifdef YOLOV5
     m_postprocess_p(new PostProcessYolov5),
 #elif defined YOLOV8
@@ -152,9 +153,7 @@ int RKNNInference::Detect(const CameraSingleFrame &img, detect_result_group_t& d
     int64_t t2 = LogCustom::GetTimeStampMS();
     m_postprocess_p->Process(&m_model_info, m_conf_thres, m_iou_thres, &detect_result_group);
 
-    int64_t t3 = LogCustom::GetTimeStampMS();
-    Log("detect_result_group.count:%d - %lld %lld %lld %lld", detect_result_group.count, t3-t0, t1-t0, t2-t1, t3-t2);
-
+    int64_t t3 = LogCustom::GetTimeStampMS();    
     if( true == m_save_result_img_enable)
     {
         cv::Mat imgShow = cv::Mat(img.height, img.width, CV_8UC3, img.p_data);
@@ -162,12 +161,10 @@ int RKNNInference::Detect(const CameraSingleFrame &img, detect_result_group_t& d
         {
             detect_result_t &det_result = detect_result_group.results[i];
 
-            cv::rectangle(imgShow, cv::Rect(det_result.box.left, det_result.box.top, (det_result.box.right - det_result.box.left), (det_result.box.bottom - det_result.box.top)),
+            cv::rectangle(imgShow, cv::Rect(cv::Point(det_result.box.left, det_result.box.top), cv::Point(det_result.box.right, det_result.box.bottom)),
             cv::Scalar(255,255,255));
 
-            det_result.box.top = ((det_result.box.top - LABEL_BORDER) < 0) ? 0 : (det_result.box.top - LABEL_BORDER);
-            det_result.box.bottom = ((det_result.box.bottom - LABEL_BORDER) < 0) ? 0 : (det_result.box.bottom - LABEL_BORDER);
-            det_result.box.bottom = (det_result.box.bottom > (img.height - (2 * LABEL_BORDER))) ? (img.height - (2 * LABEL_BORDER)) : det_result.box.bottom;
+            m_imgProcess_ref.GetRealBox(det_result.box, det_result.box);
             Log("%s @ (%d %d %d %d) %f",
                 det_result.name,
                 det_result.box.left, det_result.box.top, det_result.box.right, det_result.box.bottom,
@@ -183,16 +180,16 @@ int RKNNInference::Detect(const CameraSingleFrame &img, detect_result_group_t& d
         {
             detect_result_t &det_result = detect_result_group.results[i];
 
-            det_result.box.top = ((det_result.box.top - LABEL_BORDER) < 0) ? 0 : (det_result.box.top - LABEL_BORDER);
-            det_result.box.bottom = ((det_result.box.bottom - LABEL_BORDER) < 0) ? 0 : (det_result.box.bottom - LABEL_BORDER);
-            det_result.box.bottom = (det_result.box.bottom > (img.height - (2 * LABEL_BORDER))) ? (img.height - (2 * LABEL_BORDER)) : det_result.box.bottom;
+            m_imgProcess_ref.GetRealBox(det_result.box, det_result.box);
             Log("%s @ (%d %d %d %d) %f",
                 det_result.name,
                 det_result.box.left, det_result.box.top, det_result.box.right, det_result.box.bottom,
                 det_result.prop);
         }
     }
-    
+    int64_t t4 = LogCustom::GetTimeStampMS();
+    Log("cost:%lld %lld %lld %lld %lld", (t4 - t0), (t1 - t0), (t2 - t1), (t3 - t2), (t4 - t3));
+
     ret = 0;
     return ret;
 }

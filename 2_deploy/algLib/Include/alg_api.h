@@ -45,3 +45,9 @@ ALG_C_API_EXPORT ALGO_RET_E algo_set_param(uint32_t param_id, const char *p_in_p
  * @return       ::ALGO_RET_OK    If the function succeeded, or one of the error values defined by ::ALGO_RET_E.
  */
 ALG_C_API_EXPORT ALGO_RET_E algo_get_param(uint32_t param_id, const char **p_out_param, uint16_t *p_param_len);
+
+/**
+ * @brief        Releases the resources used by the algorithm library. After invoking this function, no other APIs should be invoked except algo_initialize..
+ * @return       ::ALGO_RET_OK    If the function succeeded, or one of the error values defined by ::ALGO_RET_E.
+ */
+ALG_C_API_EXPORT ALGO_RET_E algo_release(void);
