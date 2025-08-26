@@ -40,7 +40,7 @@ if [[ -z ${BUILD_TYPE} ]];then
 fi
 
 ROOT_PWD=$( cd "$( dirname $0 )" && cd -P "$( dirname "$SOURCE" )" && pwd )
-INSTALL_DIR=${ROOT_PWD}/install
+INSTALL_DIR=${ROOT_PWD}/install/nyx650
 BUILD_DIR=${ROOT_PWD}/build
 
 if [ ! -d "${BUILD_DIR}" ];then
@@ -89,3 +89,7 @@ fi
 
 cp ${ROOT_PWD}/${MODEL_FILE_PATH} "${MODEL_DIRECTORY}/test.rknn"
 cp -r ${ROOT_PWD}/${TEST_IMAGES_PATH} ${INSTALL_DIR}
+
+cd ${INSTALL_DIR}/..
+tar  -cvf morph_boxDetection_Ver25_4_1.tar *
+mv *.tar ${INSTALL_DIR}/../..

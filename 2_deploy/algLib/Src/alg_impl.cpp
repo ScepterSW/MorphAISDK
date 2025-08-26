@@ -27,7 +27,9 @@ ALG_Impl::ALG_Impl() :
 {}
 
 ALG_Impl::~ALG_Impl()
-{}
+{
+    Stop();
+}
 
 int ALG_Impl::Init(const ALGO_INIT_PARAM_T *p_init_param)
 {
@@ -215,9 +217,8 @@ int ALG_Impl::Start()
     if(false == IsRunning())
     {
         ret = StoppableThread::Start();
+        SetInfo("start");
     }
-    
-    SetInfo("start");
     return ret;
 }
 
@@ -281,8 +282,8 @@ void ALG_Impl::Stop()
     {
         StoppableThread::Stop();
         Join();
+        SetInfo("stop", true);
     }
-    SetInfo("stop", true);
 }
 
 void ALG_Impl::CallBackFunc(uint64_t timestamp, const detect_result_group_t& detect__result_group)

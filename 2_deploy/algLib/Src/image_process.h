@@ -3,12 +3,12 @@
 
 #include <memory>
 #include <mutex>
-#include <condition_variable>
 #include <opencv2/opencv.hpp>
 #include "alg_types.h"
+#include "condition_variable_custom.h"
 
 using std::mutex;
-using std::condition_variable;
+using cyan::condition_variable;
 using cv::Size;
 
 class ImgProcess

@@ -15,7 +15,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O2 -Wall")
 
 add_definitions("-D_REENTRANT -fPIC -D ALG_EXPORT_ON -D Linux -D RV1126")
 set(CMAKE_C_STANDARD 11)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 14)
 
 if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
     message(STATUS "ENABLE ADDRESS SANTITIZE")
@@ -29,6 +29,7 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}/"
 "${CMAKE_CURRENT_SOURCE_DIR}/Src"
 "${CMAKE_CURRENT_SOURCE_DIR}/Src/Postprocess"
 "${CMAKE_CURRENT_SOURCE_DIR}//3rdparty/jsoncpp/include"
+"${CMAKE_CURRENT_SOURCE_DIR}//3rdparty/condition_variable"
 )
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/jsoncpp/include")
@@ -60,3 +61,4 @@ ADD_LIBRARY(${PROJECT_NAME} SHARED ${SOURCES} ${POSTPROCESS})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${OpenCV_LIBS} rknn_api rga pthread dl json)
 
 install(TARGETS ${PROJECT_NAME} DESTINATION ./lib)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/Config/user_config.json DESTINATION ./cam_config/)

@@ -81,13 +81,68 @@ typedef enum AlgorithmStateEnum
 //Specifies the ID of the parameter
 typedef enum ParamID
 {
-    PARAM_VERSION = 0,                      //Algorithm Version Number
-    PARAM_CONF_THRESH = 1,                  //The threshold of the prediction box
-    PARAM_IOU_THRESH = 2,                   //The threshold for IOU detection
-    PARAM_SAVE_RESULT_IMAGE_ENABLE = 3,     //Save an image of the model predictions
-    PARAM_TEST_ASCII = 4,                   //Test ASCII parameter
-    PARAM_TEST_HEX = 5,                     //Test HEX parameter
+    PARAM_VERSION = 0x00,                      // The version of the Algorithm library
+    PARAM_NAME = 0x01,                         // The name of the Algorithm library
+    
+    PARAM_SAVE_RESULT_IMAGE_ENABLE = 0x10,     //Save an image of the model predictions
+    PARAM_TEST_ASCII = 0x11,                   //Test ASCII parameter
+    PARAM_TEST_HEX = 0x12,                     //Test HEX parameter
+
+    PARAM_CONF_THRESH = 0x21,                  //The threshold of the prediction box
+    PARAM_IOU_THRESH = 0x22,                   //The threshold for IOU detection
 }PARAM_ID_E;
+
+typedef enum OutputType
+{
+    OUTPUT_NONE = 0,
+    OUTPUT_INTERNET = 0x01,
+    OUTPUT_GPIO = 0x02,
+    OUTPUT_RS485 = 0x04,
+    OUTPUT_LED = 0x08,
+    OUTPUT_ALL = OUTPUT_INTERNET | OUTPUT_GPIO | OUTPUT_RS485 | OUTPUT_LED,
+}OUPUT_TYPE_E;
+
+typedef enum OutputHandleType
+{
+    OUTPUT_HANDLE_LED = 0,
+    OUTPUT_HANDLE_GPIO = 1,
+    OUTPUT_HANDLE_UART = 2,
+} OUTPUT_HANDLE_TYPE_E;
+
+typedef enum Baudrate{
+    B0 = 0,       //hang up
+    B50 = 1,
+    B75  = 2,
+    B110 = 3,
+    B134 = 4,
+    B150 = 5,
+    B200 = 6,
+    B300 = 7,
+    B600 = 8,
+    B1200 = 9,
+    B1800 = 10,
+    B2400 = 11,
+    B4800 = 12,
+    B9600 = 13,
+    B19200 = 14,
+    B38400 = 15,
+    B57600 = 16,
+    B115200 = 17,
+    B230400 = 18,
+    B460800 = 19,
+    B500000 = 20,
+    B576000 = 21,
+    B921600 = 22,
+    B1000000 = 23,
+    B1152000 = 24,
+    B1500000 = 25,
+    B2000000 = 26,
+    B2500000 = 27,
+    B3000000 = 28,
+    B3500000 = 29,
+    B4000000 = 30
+}BAUDRATE_E;
+
 
 #pragma pack (push, 1)
 

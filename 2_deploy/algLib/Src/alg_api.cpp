@@ -4,7 +4,8 @@
 #include "log.h"
 #include "serialization.h"
 
-static const string VERSION = "24.10.1";
+static const string VERSION = "25.4.1";
+static const string NAME = "BoxDetection";
 static unique_ptr<ALG_Impl> gALG_ImplPtr = nullptr;
 
 #define CHECKINIT if(nullptr == gALG_ImplPtr)                                                                               \
@@ -106,6 +107,7 @@ ALGO_RET_E algo_set_param(uint32_t param_id, const char *p_in_param, uint16_t pa
     switch (ParamID(param_id))
     {
     case PARAM_VERSION:
+    case PARAM_NAME:
     {
         ret = ALGO_RET_NOT_SUPPORT;
     }
@@ -208,6 +210,12 @@ ALGO_RET_E algo_get_param(uint32_t param_id, const char **p_out_param, uint16_t 
         *p_param_len = VERSION.length() + 1;
     }
     break;
+    case PARAM_NAME:
+    {
+        *p_out_param = NAME.c_str();
+        *p_param_len = NAME.length() + 1;
+    }
+    break;
     case PARAM_CONF_THRESH:
     {
         Serialization serialization;
@@ -257,6 +265,31 @@ ALGO_RET_E algo_get_param(uint32_t param_id, const char **p_out_param, uint16_t 
     if(ALGO_RET_JSON_GENERATE_NG == ret)
     {
         Log("param_id:%s, failed to generate json format string.", param_id);
+    }
+
+    return ret;
+}
+
+ALGO_RET_E algo_set_output_handle(OutputHandleType outputHandleType, void *p_output_handle)
+{
+    ALGO_RET_E ret = ALGO_RET_OK;
+
+    Log("outputHandleType:%d, p_output_handle:%p.", outputHandleType, p_output_handle);
+
+    if(nullptr == p_output_handle)
+    {
+        Log("outputHandleType:%d, p_output_handle:%p is null.", outputHandleType, p_output_handle);
+        ret = ALGO_RET_CHECK_PARAMS_NG;
+        return ret;
+    }
+
+    CHECKINIT;
+    switch (outputHandleType)
+    {
+    default:
+        Log("outputHandleType:%d is invalid.", outputHandleType);
+        ret = ALGO_RET_CHECK_PARAMS_NG;
+        break;
     }
 
     return ret;
